@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-api-app-deployment-1
+  labels:
+    app: node-api-app-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-api-app-1
+  template:
+    metadata:
+      labels:
+        app: node-api-app-1
+    spec:
+      containers:
+      - name: node-api-app-1
+        image: node-api-app:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        env:
+        - name: THIS_SERVER
+          value: node-api-app-1
+        - name: FORWARD_URL
+          value: "http://node-api-app-service-2:80/forward"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-api-app-service-1
+spec:
+  selector:
+    app: node-api-app-1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-api-app-deployment-2
+  labels:
+    app: node-api-app-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-api-app-2
+  template:
+    metadata:
+      labels:
+        app: node-api-app-2
+    spec:
+      containers:
+      - name: node-api-app-2
+        image: node-api-app:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        env:
+        - name: THIS_SERVER
+          value: node-api-app-2
+        - name: FORWARD_URL
+          value: ""
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-api-app-service-2
+spec:
+  selector:
+    app: node-api-app-2
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
